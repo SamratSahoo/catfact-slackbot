@@ -36,25 +36,57 @@ def handle_challenge():
 
 @app.route('/catfact', methods=['POST'])
 def get_cat_fact():
-    response = requests.get('https://catfact.ninja/fact')
-    data = request.form
-    channel_id = data.get('channel_id')
+    try:
+        response = requests.get('https://catfact.ninja/fact')
+        data = request.form
+        channel_id = data.get('channel_id')
 
-    if channel_id not in valid_channels:
-        return
+        if channel_id not in valid_channels:
+            return
 
-    if response.status_code != 200:
+        if response.status_code != 200:
+            client.chat_postMessage(
+                channel=channel_id, text="Failed to get catfact!")
+            return Response, 500
+        
+        cat_fact = response.json()["fact"]
+        client.chat_postMessage(
+            channel=channel_id, 
+            text=f"🐈 {cat_fact} 🐈"
+        )
+        return Response(), 200
+    except:
         client.chat_postMessage(
             channel=channel_id, text="Failed to get catfact!")
-        return Response, 500
-    
+        return Response(), 500
 
 
-    client.chat_postMessage(
-        channel=channel_id, 
-        text=response.json()["fact"]
-    )
-    return Response(), 200
+@app.route('/dogfact', methods=['POST'])
+def get_dog_fact():
+    try:
+        response = requests.get('https://dogapi.dog/api/v2/facts')
+        data = request.form
+        channel_id = data.get('channel_id')
+
+        if channel_id not in valid_channels:
+            return
+
+        if response.status_code != 200:
+            client.chat_postMessage(
+                channel=channel_id, text="Failed to get dogfact!")
+            return Response, 500
+        
+        dog_fact = response.json()['data'][0]['attributes']['body']
+        client.chat_postMessage(
+            channel=channel_id, 
+            text=f"🐕 {dog_fact} 🐕"
+        )
+        return Response(), 200
+    except:
+        client.chat_postMessage(
+            channel=channel_id, text="Failed to get dogfact!")
+
+        return Response(), 500
 
 # @slack_event_adapter.on('app_mention')
 # def app_mention(payload):
